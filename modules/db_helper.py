@@ -6,22 +6,50 @@ from modules.vulns import Vulnerability
 import re
 import json
 
-def insert_bbot_to_db(dataframe: pd.DataFrame):
+def insert_bbot_to_db(dataframe: pd.DataFrame, org_name: str):
     try:
         connection = mysql.connector.connect(**db_config)
         
         if connection.is_connected():
             cursor = connection.cursor()
-
+            cursor.execute(f"USE {org_name}") #? Select the database for the organisation
             #? Iterate over DataFrame rows and insert into MySQL table
             for index, row in dataframe.iterrows():
-                event_type = row['Event type']
-                event_data = row['Event data']
-                ip_address = row['IP Address']
-                source_module = row['Source Module']
-                scope_distance = row['Scope Distance']
-                event_tags = row['Event Tags']
-                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                try:
+                    event_type = json.dumps(json.loads(row["Event type"].replace("'", '"')))
+                except (json.JSONDecodeError, AttributeError):
+                    event_type = row["Event type"]
+
+                try:
+                    event_data = json.dumps(json.loads(row["Event data"].replace("'", '"')))
+                except (json.JSONDecodeError, AttributeError):
+                    event_data = row["Event data"]
+
+                try:
+                    ip_address = json.dumps(json.loads(row["IP Address"].replace("'", '"')))
+                except (json.JSONDecodeError, AttributeError):
+                    ip_address = row["IP Address"]
+
+                try:
+                    source_module = json.dumps(json.loads(row["Source Module"].replace("'", '"')))
+                except (json.JSONDecodeError, AttributeError):
+                    source_module = row["Source Module"]
+
+                try:
+                    scope_distance = json.dumps(json.loads(row["Scope Distance"].replace("'", '"')))
+                except (json.JSONDecodeError, AttributeError):
+                    scope_distance = row["Scope Distance"]
+
+                try:
+                    event_tags = json.dumps(json.loads(row["Event Tags"].replace("'", '"')))
+                except (json.JSONDecodeError, AttributeError):
+                    event_tags = row["Event Tags"]
+
+                # Handle the case with single quotes in nested JSON
+                if isinstance(event_data, str) and event_data.startswith("{") and event_data.endswith("}"):
+                    event_data = event_data.replace("'", '"')
+
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 insert_query = """
                 INSERT INTO asmevents (event_type, event_data, ip_address, source_module, scope_distance, event_tags, time)
@@ -135,13 +163,13 @@ def prepare_non_cve_data(vuln):
 
     return non_cve_data
 
-def insert_vulnerability_to_database(vuln: Vulnerability):
+def insert_vulnerability_to_database(vuln: Vulnerability, org_name: str):
     # Establish the database connection
     connection = mysql.connector.connect(**db_config)
     
     if connection.is_connected():
         cursor = connection.cursor()
-
+        cursor.execute(f"USE {org_name}")
         # Define the INSERT query
         insert_query = """
         INSERT INTO Vulnerability (

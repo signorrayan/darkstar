@@ -14,10 +14,11 @@ import re
 fruit_juice = base64.b64decode(fruit_juice).decode("utf-8")
 
 class bbot():
-    def __init__(self, target: str):
+    def __init__(self, target: str, org_name: str):
         self.target = target
         self.folder = f"/home/joost/AttackSurface/release_1.0/bbot_output"
         self.foldername = hashlib.md5(os.urandom(10)).hexdigest()
+        self.org_name = org_name
 
         #? Create a directory for bbot output if not exists
         if not os.path.exists(self.folder):
@@ -52,7 +53,7 @@ class bbot():
             target_file.write(self.target)
 
         #? Store data from csv intot the database
-        insert_bbot_to_db(self.prep_data())
+        insert_bbot_to_db(self.prep_data(), org_name=self.org_name)
 
     def aggressive(self) -> None:
         print(f"{Fore.GREEN}[+] Scanning {self.target} with aggressive bbot{Style.RESET_ALL}")
@@ -62,6 +63,7 @@ class bbot():
         #? Run bbot with aggressive settings
         process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
 
+        #? Change permissions of the folder
         command = ["sudo", "-S", "chown", "-R", "joost:joost", f"{self.folder}/{self.foldername}"]
         process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
         
@@ -70,7 +72,7 @@ class bbot():
             target_file.write(self.target)
 
         #? Store data from csv into the database
-        insert_bbot_to_db(self.prep_data())
+        insert_bbot_to_db(self.prep_data(), org_name=self.org_name)
 
 
 class nuclei():
