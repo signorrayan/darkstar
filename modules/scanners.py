@@ -1,5 +1,4 @@
 from modules.db_helper import *
-from modules.config import fruit_juice
 from modules.vulns import Vulnerability, CVE
 import pandas as pd
 import os
@@ -11,12 +10,12 @@ import threading
 import re
 
 
-fruit_juice = base64.b64decode(fruit_juice).decode("utf-8")
+#fruit_juice = base64.b64decode(fruit_juice).decode("utf-8")
 
 class bbot():
     def __init__(self, target: str, org_name: str):
         self.target = target
-        self.folder = f"/home/joost/AttackSurface/release_1.0/bbot_output"
+        self.folder = f"/app/bbot_output"
         self.foldername = hashlib.md5(os.urandom(10)).hexdigest()
         self.org_name = org_name
 
@@ -39,14 +38,11 @@ class bbot():
     def passive(self) -> None:
         print(f"{Fore.GREEN}[+] Scanning {self.target} with passive bbot{Style.RESET_ALL}")
 
-        command = ["sudo", "-S", "/root/.local/bin/bbot", "-t", self.target, "-f", "safe,passive,subdomain-enum,cloud-enum,email-enum,social-enum,code-enum", "-o", self.folder, "-n", self.foldername, "-y"]
+        #TODO: Change command for docker
+        command = ["/root/.local/bin/bbot", "-t", self.target, "-f", "safe,passive,subdomain-enum,cloud-enum,email-enum,social-enum,code-enum", "-o", self.folder, "-n", self.foldername, "-y"]
         
         #? Run bbots with passive settings
-        process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
-
-        #? Change permissions of the folder
-        command = ["sudo", "-S", "chown", "-R", "joost:joost", f"{self.folder}/{self.foldername}"]
-        process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
+        process = subprocess.run(command, capture_output=True, text=True)
 
         #? place target name in the foldername
         with open(f"{self.folder}/{self.foldername}/TARGET_NAME", "w") as target_file:
@@ -58,15 +54,12 @@ class bbot():
     def aggressive(self) -> None:
         print(f"{Fore.GREEN}[+] Scanning {self.target} with aggressive bbot{Style.RESET_ALL}")
 
-        command = ["sudo", "-S", "/root/.local/bin/bbot", "-t", self.target, "-f", "safe,passive,active,deadly,aggressive,web-thorough,subdomain-enum,cloud-enum,code-enum,affiliates", "-m", "nuclei,baddns,baddns_zone,dotnetnuke,ffuf", "--allow-deadly", "-o", self.folder, "-n", self.foldername, "-y"]
+        #TODO: Change command for docker
+        command = ["/root/.local/bin/bbot", "-t", self.target, "-f", "safe,passive,active,deadly,aggressive,web-thorough,subdomain-enum,cloud-enum,code-enum,affiliates", "-m", "nuclei,baddns,baddns_zone,dotnetnuke,ffuf", "--allow-deadly", "-o", self.folder, "-n", self.foldername, "-y"]
 
         #? Run bbot with aggressive settings
-        process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
+        process = subprocess.run(command, capture_output=True, text=True)
 
-        #? Change permissions of the folder
-        command = ["sudo", "-S", "chown", "-R", "joost:joost", f"{self.folder}/{self.foldername}"]
-        process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
-        
         #? place target name in the foldername
         with open(f"{self.folder}/{self.foldername}/TARGET_NAME", "w") as target_file:
             target_file.write(self.target)
