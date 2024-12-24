@@ -34,7 +34,7 @@ class CVE:
 
 
 class Vulnerability():
-    def __init__(self, title, affected_item, tool, confidence, severity, host, cve_number=None, summary=None, impact=None, solution=None, poc=None, references=None, epss=None, cvss=None):
+    def __init__(self, title, affected_item, tool, confidence, severity, host, cve_number=None, summary=None, impact=None, solution=None, poc=None, references=None, epss=None, cvss=None, cwe=None, capec=None):
         self.title = title
         self.affected_item = affected_item
         self.tool = tool
@@ -51,6 +51,8 @@ class Vulnerability():
             self.references = references
             self.epss = epss
             self.cvss = cvss
+            self.cwe = cwe
+            self.capec = capec
 
     def cve_enricher(self, cve_number: str) -> CVE:            
         #? Get the epss score for the cve

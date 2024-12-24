@@ -1,10 +1,12 @@
--- Step 1: Create a User with Full Privileges
-CREATE USER 'datamanager'@'%' IDENTIFIED BY 'asjaskld29847ajksda#sdas';
+-- Create user only if it doesn't exist
+CREATE USER IF NOT EXISTS 'datamanager'@'%'
+IDENTIFIED BY 'asjaskld29847ajksda#sdas';
 
--- Grant ALL PRIVILEGES to the user on all databases
-GRANT ALL PRIVILEGES ON *.* TO 'datamanager'@'%' WITH GRANT OPTION;
+-- Grant ALL PRIVILEGES on *.* to this user
+GRANT ALL PRIVILEGES ON *.* TO 'datamanager'@'%'
+WITH GRANT OPTION;
 
--- Flush privileges to apply changes
+-- Apply changes
 FLUSH PRIVILEGES;
 
 -- Step 2: Create the 'test' Database (if not exists)
@@ -14,8 +16,9 @@ CREATE DATABASE IF NOT EXISTS test;
 USE test;
 
 -- Step 3: Create the 'Vulnerability' Table
-CREATE TABLE Vulnerability (
-    cve VARCHAR(255) NOT NULL, -- CVE identifier (unique vulnerability ID)
+CREATE TABLE IF NOT EXISTS Vulnerability (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    cve VARCHAR(255), -- CVE identifier (unique vulnerability ID)
     title VARCHAR(255), -- Title or short description of the vulnerability
     affected_item VARCHAR(255), -- The item or system affected by the vulnerability
     tool VARCHAR(255), -- The tool used to identify the vulnerability
@@ -33,11 +36,12 @@ CREATE TABLE Vulnerability (
     access VARCHAR(255), -- Access vector or requirements for exploiting the vulnerability
     age INT, -- Age of the vulnerability in days
     pocs TEXT, -- Proof of concepts (PoCs) or exploitation examples
-    kev BOOLEAN -- Known Exploited Vulnerability (True/False)
+    kev BOOLEAN, -- Known Exploited Vulnerability (True/False)
+    PRIMARY KEY (id)
 );
 
 -- Step 4: Create the 'asmevents' Table
-CREATE TABLE asmevents (
+CREATE TABLE IF NOT EXISTS asmevents (
     id INT(11) NOT NULL AUTO_INCREMENT, -- Unique identifier for the event
     event_type VARCHAR(50) DEFAULT NULL, -- Type of the event
     event_data TEXT DEFAULT NULL, -- Detailed data about the event
@@ -47,4 +51,23 @@ CREATE TABLE asmevents (
     event_tags TEXT DEFAULT NULL, -- Tags associated with the event
     `time` DATETIME DEFAULT NULL, -- Timestamp of the event
     PRIMARY KEY (id) -- Set 'id' as the primary key
+);
+
+CREATE TABLE IF NOT EXISTS email_inputs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS email_leaks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    breach_name VARCHAR(255) NOT NULL,
+    breach_date DATE,
+    domain VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS password_leaks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL
 );
