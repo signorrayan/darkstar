@@ -1,6 +1,6 @@
 from modules.db_helper import *
-from modules.config import fruit_juice
 from modules.vulns import Vulnerability, CVE
+from modules.HIBPwned import HIBPwned
 import pandas as pd
 import os
 import subprocess
@@ -10,18 +10,48 @@ import hashlib
 import threading
 import re
 
-
-fruit_juice = base64.b64decode(fruit_juice).decode("utf-8")
-
 class bbot():
-    def __init__(self, target: str):
+    def __init__(self, target: str, org_name: str):
         self.target = target
-        self.folder = f"/home/joost/AttackSurface/release_1.0/bbot_output"
+        self.folder = f"/app/bbot_output"
         self.foldername = hashlib.md5(os.urandom(10)).hexdigest()
+        self.org_name = org_name
 
         #? Create a directory for bbot output if not exists
         if not os.path.exists(self.folder):
             os.mkdir(self.folder)
+
+    def vulns_to_db(self, df: pd.DataFrame) -> None:
+        for index, row in df.iterrows():
+            if row['Event type'] == "VULNERABILITY" or row["Event type"] == "FINDING":
+                #? Get the object and store into the database as a vulnerability
+                #FINDING,"{'host': 'lijn83po.nl', 'description': 'OpenID Connect Endpoint (domain: lijn83po.nl) found at https://login.windows.net/lijn83po.nl/.well-known/openid-configuration', 'url': 'https://login.windows.net/lijn83po.nl/.well-known/openid-configuration'}",194.50.112.30,oauth,0,in-scope,"Scan 6fffbee34a9624d6774bb1c6fa3adf96 seeded with DNS_NAME: lijn83po.nl --> oauth identified FINDING: OpenID Connect Endpoint for ""lijn83po.nl"" at https://login.windows.net/lijn83po.nl/.well-known/openid-configuration"
+                #TODO: Command Injection vulnerability, if someone is able to alter the csv data from the bbot tool -> malicious install maybe its unlikely but need to keep in mind
+                item = eval(row["Event data"])
+                if isinstance(item, str):
+                    item = eval(item)
+                severity = "info" if row["Event type"] == "FINDING" else item.get("severity", None)
+                finding_object = Vulnerability(
+                    title=item.get("description", None),
+                    affected_item=item.get("url", None),
+                    tool="bbot",
+                    confidence=90,
+                    severity=severity,
+                    host=item.get("host", None),
+                    poc=item.get("url", None),
+                    summary=item.get("description", None)
+                )
+                print(f"[+] Adding to database:\n{finding_object}")
+                insert_vulnerability_to_database(vuln=finding_object, org_name=self.org_name)
+
+    def hibpwned(self) -> None:
+        print(f"{self.folder}/{self.foldername}/emails.txt")
+        
+        if not os.path.exists(f"{self.folder}/{self.foldername}/emails.txt"):
+            print(f"[-] No emails file found")
+            return
+        hibp = HIBPwned(f"{self.folder}/{self.foldername}/emails.txt", self.org_name)
+        hibp.run()
 
     def prep_data(self) -> pd.DataFrame:
         if os.path.exists(f"{self.folder}/{self.foldername}/output.csv"):
@@ -30,6 +60,12 @@ class bbot():
             
             #? Replace NaN with None
             df = df.where(pd.notnull(df), None)
+
+            self.hibpwned()
+
+            #TODO: Check if bbot found any vulns write to vulnerability class and insert to db
+            self.vulns_to_db(df)          
+
             return df    
         else:
             print(f"{Fore.RED}[-] No output file found, Something went wrong with bbot scan{Style.RESET_ALL}")
@@ -38,40 +74,32 @@ class bbot():
     def passive(self) -> None:
         print(f"{Fore.GREEN}[+] Scanning {self.target} with passive bbot{Style.RESET_ALL}")
 
-        command = ["sudo", "-S", "/root/.local/bin/bbot", "-t", self.target, "-f", "safe,passive,subdomain-enum,cloud-enum,email-enum,social-enum,code-enum", "-o", self.folder, "-n", self.foldername, "-y"]
+        command = ["/root/.local/bin/bbot", "-t", self.target, "-f", "safe,passive,subdomain-enum,cloud-enum,email-enum,social-enum,code-enum", "-o", self.folder, "-n", self.foldername, "-y"]
         
         #? Run bbots with passive settings
-        process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
-
-        #? Change permissions of the folder
-        command = ["sudo", "-S", "chown", "-R", "joost:joost", f"{self.folder}/{self.foldername}"]
-        process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
+        process = subprocess.run(command, capture_output=True, text=True)
 
         #? place target name in the foldername
         with open(f"{self.folder}/{self.foldername}/TARGET_NAME", "w") as target_file:
             target_file.write(self.target)
 
         #? Store data from csv intot the database
-        insert_bbot_to_db(self.prep_data())
+        insert_bbot_to_db(self.prep_data(), org_name=self.org_name)
 
     def aggressive(self) -> None:
         print(f"{Fore.GREEN}[+] Scanning {self.target} with aggressive bbot{Style.RESET_ALL}")
 
-        command = ["sudo", "-S", "/root/.local/bin/bbot", "-t", self.target, "-f", "safe,passive,active,deadly,aggressive,web-thorough,subdomain-enum,cloud-enum,code-enum,affiliates", "-m", "nuclei,baddns,baddns_zone,dotnetnuke,ffuf", "--allow-deadly", "-o", self.folder, "-n", self.foldername, "-y"]
+        command = ["/root/.local/bin/bbot", "-t", self.target, "-f", "safe,passive,active,deadly,aggressive,web-thorough,subdomain-enum,cloud-enum,code-enum,affiliates", "-m", "nuclei,baddns,baddns_zone,dotnetnuke,ffuf", "--allow-deadly", "-o", self.folder, "-n", self.foldername, "-y"]
 
         #? Run bbot with aggressive settings
-        process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
+        process = subprocess.run(command, capture_output=True, text=True)
 
-        command = ["sudo", "-S", "chown", "-R", "joost:joost", f"{self.folder}/{self.foldername}"]
-        process = subprocess.run(command, input=fruit_juice + "\n", capture_output=True, text=True)
-        
         #? place target name in the foldername
         with open(f"{self.folder}/{self.foldername}/TARGET_NAME", "w") as target_file:
             target_file.write(self.target)
 
         #? Store data from csv into the database
-        insert_bbot_to_db(self.prep_data())
-
+        insert_bbot_to_db(self.prep_data(), org_name=self.org_name)
 
 class nuclei():
     def __init__(self, filename: str):
@@ -190,7 +218,8 @@ class nuclei():
                     finding_object = Vulnerability(vuln, url, "nuclei", 97, category, host=domain, cve_number=cve_number, epss=epss_percentile)
 
                     #? add to database
-                    insert_vulnerability_to_database(finding_object)
+                    print(f"[+] Adding to database:\n{finding_object}")
+                    insert_vulnerability_to_database(vuln=finding_object, org_name=self.org_name)
 
     #? Run the nuclei flow
     def run(self) -> None:     

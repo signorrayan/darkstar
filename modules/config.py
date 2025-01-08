@@ -1,8 +1,6 @@
 db_config = {
-    'user': 'usernamehere',    
-    'password': 'passwordhere',     
+    'user': 'datamanager',    
+    'password': 'asjaskld29847ajksda#sdas',     
     'host': 'localhost',
-    'database': 'databasenamehere'
+    'database': 'test'
 }
-
-fruit_juice = 'juicehere='
