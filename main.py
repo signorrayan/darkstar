@@ -17,16 +17,16 @@ class worker():
         self.mode = mode
         self.org_domain = org_name
     def run(self):
-        #? Save domains to a file
-        # if not self.target_df['Domains'].empty:
-        #     with open('domains.txt', 'w') as f:
-        #         for domain in self.target_df['Domains']:
-        #             f.write(f"{domain}\n")
-        # exit()
         #? Aggressive mode
         if self.mode == 3:
-            nuclei('domains.txt').run()
-            # bbot(self.all_targets).aggressive()
+            #? Run bbot with aggressive settings
+            bbot_scanner = bbot(self.all_targets, self.org_domain)
+            bbot_scanner.aggressive()
+            
+            #? Run nuclei on the subdomains
+            nuclei(f'{bbot_scanner.folder}/{bbot_scanner.foldername}/subdomains.txt').run()
+
+        
         #? Normal mode
         elif self.mode == 2:
             bbot_scanner = bbot(self.all_targets, self.org_domain)
@@ -84,7 +84,7 @@ def main():
     }
     target_df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in target_data.items()]))
 
-    # Run the scanner
+    #? Run the scanner
     scanner = worker(mode=args.mode, targets=args.target, target_df=target_df, org_name=args.domain)
     scanner.run()
 

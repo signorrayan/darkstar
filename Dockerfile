@@ -31,7 +31,6 @@ COPY setup/mysqld-supervisor.conf /etc/supervisor/conf.d/mysqld.conf
 RUN apt-get install -y mariadb-server
 RUN mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld 
 COPY setup/setup_script.sql /install
-# RUN mariadb < setup_script.sql
 
 # Change to the app directory
 RUN mkdir /app
@@ -61,5 +60,3 @@ RUN echo 'export PATH=$PATH:/root/go/bin/' >> ~/.bashrc
 RUN export GITHUB_TEMPLATE_REPO=topscoder/nuclei-wordfence-cve && /root/go/bin/nuclei -update-templates
 
 CMD ["/usr/bin/supervisord", "-n"]
-
-# Fix user for database and setup of the database

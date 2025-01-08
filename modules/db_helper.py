@@ -9,7 +9,6 @@ import json
 def insert_bbot_to_db(dataframe: pd.DataFrame, org_name: str):
     try:
         connection = mysql.connector.connect(**db_config)
-        
         if connection.is_connected():
             cursor = connection.cursor()
             cursor.execute(f"USE {org_name}") #? Select the database for the organisation
@@ -45,7 +44,7 @@ def insert_bbot_to_db(dataframe: pd.DataFrame, org_name: str):
                 except (json.JSONDecodeError, AttributeError):
                     event_tags = row["Event Tags"]
 
-                # Handle the case with single quotes in nested JSON
+                # Handle the edge case with single quotes in nested JSON
                 if isinstance(event_data, str) and event_data.startswith("{") and event_data.endswith("}"):
                     event_data = event_data.replace("'", '"')
 
@@ -202,3 +201,44 @@ def insert_vulnerability_to_database(vuln: Vulnerability, org_name: str):
     #         cursor.close()
     #         connection.close()
     #         print("[+] Closed the MySQL connection.")
+
+
+# Insert an email into the SQL output database
+def insert_email_data(emails, org_name):
+    connection = mysql.connector.connect(**db_config)
+    if connection.is_connected():
+        cursor = connection.cursor()
+        cursor.execute(f"USE {org_name}")
+        for email in emails:
+            email = email.strip()
+            sql_query = "INSERT INTO email_inputs (email) VALUES (%s)"
+            val = (email,)
+            cursor.execute(sql_query, val)
+            connection.commit()
+        connection.close()
+
+# Insert a breaches email into the SQL output database
+def insert_breached_email_data(email_breaches, org_name):
+    connection = mysql.connector.connect(**db_config)
+    if connection.is_connected():
+        cursor = connection.cursor()
+        cursor.execute(f"USE {org_name}")
+        for email_breach in email_breaches:
+            sql_query = "INSERT INTO email_leaks (email, breach_name, breach_date, domain) VALUES (%s, %s, %s, %s)"
+            val = (email_breach[0], email_breach[1], email_breach[2], email_breach[3])
+            cursor.execute(sql_query, val)
+            connection.commit()
+        connection.close()
+
+# Insert a leaked password into the SQL output database
+def insert_password_data(passwords, org_name):
+    connection = mysql.connector.connect(**db_config)
+    if connection.is_connected():
+        cursor = connection.cursor()
+        cursor.execute(f"USE {org_name}")
+        for password in passwords:
+            sql_query = "INSERT INTO password_leaks (email, password) VALUES (%s, %s)"
+            val = (password[0], password[1])
+            cursor.execute(sql_query, val)
+            connection.commit()
+        connection.close()
