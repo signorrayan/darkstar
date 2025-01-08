@@ -16,7 +16,6 @@ SLEEP_SECONDS = 6
 # If true we scan for password leaks
 PASSWORD_SCANNING = True
 
-
 class HIBPwned:
     def __init__(self, email_file: str, org_name: str):
         self.org_name = org_name
@@ -104,7 +103,7 @@ class HIBPwned:
                         break
 
 
-if __name__ == "__main__":
-    # Initialize the HIBPwned class
-    hibpwned = HIBPwned('./emails.txt', 'test')
-    hibpwned.run()
+# if __name__ == "__main__":
+#     # Initialize the HIBPwned class
+#     hibpwned = HIBPwned('./emails.txt', 'test')
+#     hibpwned.run()

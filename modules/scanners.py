@@ -26,6 +26,7 @@ class bbot():
             if row['Event type'] == "VULNERABILITY" or row["Event type"] == "FINDING":
                 #? Get the object and store into the database as a vulnerability
                 #FINDING,"{'host': 'lijn83po.nl', 'description': 'OpenID Connect Endpoint (domain: lijn83po.nl) found at https://login.windows.net/lijn83po.nl/.well-known/openid-configuration', 'url': 'https://login.windows.net/lijn83po.nl/.well-known/openid-configuration'}",194.50.112.30,oauth,0,in-scope,"Scan 6fffbee34a9624d6774bb1c6fa3adf96 seeded with DNS_NAME: lijn83po.nl --> oauth identified FINDING: OpenID Connect Endpoint for ""lijn83po.nl"" at https://login.windows.net/lijn83po.nl/.well-known/openid-configuration"
+                #TODO: Command Injection vulnerability, if someone is able to alter the csv data from the bbot tool -> malicious install maybe its unlikely but need to keep in mind
                 item = eval(row["Event data"])
                 if isinstance(item, str):
                     item = eval(item)

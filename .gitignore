@@ -3,3 +3,5 @@ venv
 env
 
 HIBPwnedKey.txt
+
+__pycache__
