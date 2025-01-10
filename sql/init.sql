@@ -1,10 +1,5 @@
--- Create user only if it doesn't exist
-CREATE USER IF NOT EXISTS 'datamanager'@'%'
-IDENTIFIED BY 'asjaskld29847ajksda#sdas';
-
 -- Grant ALL PRIVILEGES on *.* to this user
-GRANT ALL PRIVILEGES ON *.* TO 'datamanager'@'%'
-WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'data_guru'@'%' WITH GRANT OPTION;
 
 -- Apply changes
 FLUSH PRIVILEGES;

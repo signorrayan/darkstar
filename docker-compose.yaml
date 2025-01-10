@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.5
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: database_is_fun01
+      MYSQL_DATABASE: test
+      MYSQL_USER: data_guru
+      MYSQL_PASSWORD: GuR1_F4n_DB_01
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - vuln_net
+
+  pwnpatrol:
+    build:
+      context: ./pwnpatrol
+      dockerfile: Dockerfile
+    container_name: pwnpatrol
+    depends_on:
+      - mariadb
+    networks:
+      - vuln_net
+
+volumes:
+  mariadb_data:
+
+networks:
+  vuln_net:
+    driver: bridge
