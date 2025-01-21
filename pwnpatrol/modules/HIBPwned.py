@@ -26,7 +26,7 @@ class HIBPwned:
 
     def run(self):
         # Initialize the RequestsAPI class
-        api = RequestsAPI('./HIBPwnedKey.txt')
+        api = RequestsAPI()
 
         # Initialize the FindBreaches class
         find_breaches = FindBreaches()

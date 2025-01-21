@@ -1,11 +1,9 @@
 import requests
+from config import HIBP_KEY
 
 class RequestsAPI:
-    def __init__(self, api_key_file: str):
-        # Opening API key file
-        self.api_key_file = api_key_file
-        with open(api_key_file, "r") as file:
-            self.APIKey = file.read().strip()
+    def __init__(self):
+        self.APIKey = HIBP_KEY
 
     # Send/Receive HIBPwned request
     def get_HIBPwned_request(self, email):
