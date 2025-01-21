@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y \
     wget \
     pipx \
     nano \
-    supervisor \
-    gcc
+    gcc \
+    xml2 \
+    mariadb-client
 
 RUN mkdir /install
 WORKDIR /install
@@ -24,13 +25,6 @@ WORKDIR /install
 RUN wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz
 RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.23.4.linux-amd64.tar.gz
 RUN echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-
-# Install database + setup
-RUN mkdir -p /etc/supervisor/conf.d
-COPY setup/mysqld-supervisor.conf /etc/supervisor/conf.d/mysqld.conf
-RUN apt-get install -y mariadb-server
-RUN mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld 
-COPY setup/setup_script.sql /install
 
 # Change to the app directory
 RUN mkdir /app
@@ -59,4 +53,4 @@ RUN echo 'export PATH=$PATH:/root/go/bin/' >> ~/.bashrc
 # Directly clone the wordpress templates from wordfence
 RUN export GITHUB_TEMPLATE_REPO=topscoder/nuclei-wordfence-cve && /root/go/bin/nuclei -update-templates
 
-CMD ["/usr/bin/supervisord", "-n"]
+CMD ["/bin/bash", "-c", "source /etc/bash.bashrc && tail -f /dev/null"]

@@ -1,22 +1,20 @@
 #!/bin/bash
 
-echo '[+] Building the container...'
-docker build -t pwnpatrol .
+#? Setup the docker 
+echo '[+] Building the pwnpatrol docker with all the tools inside'
+docker compose -f docker-compose.yaml up -d --build
 
-if [ "$(docker ps -aq -f name=pwnpatrol)" ]; then
-    echo '[+] Container with name pwnpatrol already exists. Starting the container...'
-    docker start pwnpatrol
-else
-    echo '[+] Starting a new container...'
-    docker run -d --name pwnpatrol pwnpatrol
-fi
+#? Setup openvas docker
+echo '[+] Building the OpenVAS docker'
+docker compose -f docker-compose.openvas.yaml up -d --build
+
+#? Start the custom api service
+echo '[+] Starting API Service OpenVAS'
+docker exec automatic-propagation-gvmd-1 /bin/sh -c "apt update && apt install python3-pip -y && python3 -m pip install gvm-tools Flask requests && python3 /opt/openvas_api.py && tail -f /dev/null" &
+
+echo '[+] Cleaning up'
 sleep 5
-if [ "$1" == "install" ]; then
-    echo '[+] Setting up the database...'
-    docker exec -it pwnpatrol /bin/bash -c 'mariadb < /install/setup_script.sql'
-else
-    echo 'Please run with `install` to set up the database.'
-fi
+clear
 
-echo '[+] Entering the container...'
+echo '[+] Starting interactive shell inside the container'
 docker exec -it pwnpatrol /bin/bash
