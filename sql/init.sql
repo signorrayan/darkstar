@@ -1,9 +1,3 @@
--- Grant ALL PRIVILEGES on *.* to this user
-GRANT ALL PRIVILEGES ON *.* TO 'data_guru'@'%' WITH GRANT OPTION;
-
--- Apply changes
-FLUSH PRIVILEGES;
-
 -- Step 2: Create the 'test' Database (if not exists)
 CREATE DATABASE IF NOT EXISTS test;
 
@@ -14,7 +8,7 @@ USE test;
 CREATE TABLE IF NOT EXISTS Vulnerability (
     id INT(11) NOT NULL AUTO_INCREMENT,
     cve VARCHAR(255), -- CVE identifier (unique vulnerability ID)
-    title VARCHAR(255), -- Title or short description of the vulnerability
+    title TEXT, -- Title or short description of the vulnerability
     affected_item VARCHAR(255), -- The item or system affected by the vulnerability
     tool VARCHAR(255), -- The tool used to identify the vulnerability
     confidence INT, -- Confidence level of the vulnerability detection
