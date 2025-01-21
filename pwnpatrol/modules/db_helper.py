@@ -211,7 +211,7 @@ def insert_email_data(emails, org_name):
         cursor.execute(f"USE {org_name}")
         for email in emails:
             email = email.strip()
-            sql_query = "INSERT INTO email_inputs (email) VALUES (%s)"
+            sql_query = "INSERT INTO email_input (email) VALUES (%s)"
             val = (email,)
             cursor.execute(sql_query, val)
             connection.commit()

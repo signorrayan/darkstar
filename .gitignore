@@ -1,5 +1,6 @@
 venv
 .venv
+.env
 env
 
 HIBPwnedKey.txt
@@ -9,3 +10,4 @@ __pycache__
 search_epss
 
 notes.md
+

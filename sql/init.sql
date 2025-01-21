@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS asmevents (
     PRIMARY KEY (id) -- Set 'id' as the primary key
 );
 
-CREATE TABLE IF NOT EXISTS email_inputs (
+CREATE TABLE IF NOT EXISTS email_input (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL
 );
