@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #? Setup the docker 
-echo '[+] Building the pwnpatrol docker with all the tools inside'
+echo '[+] Building the Darkstar docker with all the tools inside'
 docker compose -f docker-compose.yaml up -d --build
 
 #? Setup openvas docker
@@ -17,4 +17,4 @@ sleep 5
 clear
 
 echo '[+] Starting interactive shell inside the container'
-docker exec -it pwnpatrol /bin/bash
+docker exec -it darkstar /bin/bash

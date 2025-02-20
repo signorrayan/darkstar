@@ -1,15 +1,49 @@
-# Automatic propagation
-Vulnerability Scanning tool
+# Darkstar - Advanced Vulnerability Management  
+<img src="logo.png" alt="Darkstar Logo" width="300" height="300">
 
-Tools needed for installation
-- docker
-- docker compose (https://docs.docker.com/compose/install/)
+### The ultimate **Red Team** and **Blue Team** tool for attack surface mapping and vulnerability management!  
 
-## Setup with docker
-1. `chmod +x run.sh`
-2. `./run.sh`
+## Features  
+- Dashboard insight into vulnerabilities 
+- Vulnerability Scanning  
+- Attack Surface mapping 
+- Easy deployment via Docker  
 
-### Inside the container
-For this setup the database name needs to be `test` it will fail otherwise or you need to create a new database, see [setup_script](setup/setup_script.sql) only change the name of the database.
-To run the tool you could use a command like this:
-`python3 main.py -t example.com -m 2 -d test`
+---
+
+## Requirements  
+Before installing, ensure you have the following tools:  
+
+- [Docker](https://docs.docker.com/get-docker/)  
+- [Docker Compose](https://docs.docker.com/compose/install/)  
+
+
+## Quick Setup with Docker  
+
+1. Grant execution permission:  
+   ```bash
+   chmod +x run.sh
+   ```
+2. Start the tool:
+    ```bash
+    ./run.sh
+    ```
+
+
+## Inside the container
+- The database name must be `test`. If you need a custom name, update the database in [`init.sql`](sql/init.sql).
+- To run a scan, use the following command:
+```bash
+python3 main.py -t testphp.vulnweb.com -m 2 -d test
+```
+
+## Datasets
+Darkstar leverages high quality threat intelligence sources:
+- [Epss Scores](https://www.first.org/epss/data_stats) – Probabilistic vulnerability prioritization
+- [CISA Kev](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) – Known exploited vulnerabilities
+
+## Security Tip
+Please change the database password and the openvas password if running in production environment
+
+### License
+To be added
