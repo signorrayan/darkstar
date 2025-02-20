@@ -8,7 +8,7 @@ import time
 import netaddr
 from modules.vulns import Vulnerability
 from modules.db_helper import insert_vulnerability_to_database
-from config import OPENVAS_USER, OPENVAS_PASSWORD
+from modules.config import OPENVAS_USER, OPENVAS_PASSWORD
 
 class openvas():
     def __init__(self, targets, org_name):

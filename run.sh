@@ -1,5 +1,21 @@
 #!/bin/bash
 
+#? Create .env file
+echo '#? Database 
+DB_USER=
+DB_PASSWORD=
+#? Production
+DB_HOST=mariadb
+DB_NAME=test
+
+#? HIBP
+HIBP_KEY=
+
+#? OpenVAS
+OPENVAS_USER=
+OPENVAS_PASSWORD=' > .env1
+
+
 #? Setup the docker 
 echo '[+] Building the Darkstar docker with all the tools inside'
 docker compose -f docker-compose.yaml up -d --build

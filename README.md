@@ -45,5 +45,9 @@ Darkstar leverages high quality threat intelligence sources:
 ## Security Tip
 Please change the database password and the openvas password if running in production environment
 
+## Lead Developers
+- [![LinkedIn](https://i.sstatic.net/gVE0j.png) Joost Grunwald](https://www.linkedin.com/in/joost-grunwald-1a48a31b2)
+- [![LinkedIn](https://i.sstatic.net/gVE0j.png) Patrick Kuin](https://www.linkedin.com/in/patrick-kuin-8a08a81b7)
+
 ### License
 To be added
