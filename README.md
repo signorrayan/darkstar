@@ -34,7 +34,7 @@ Before installing, ensure you have the following tools:
 - The database name must be `test`. If you need a custom name, update the database in [`init.sql`](sql/init.sql).
 - To run a scan, use the following command:
 ```bash
-python3 main.py -t testphp.vulnweb.com -m 2 -d test
+python3 main.py -t testphp.vulnweb.com -m 2 -d test -env .env
 ```
 
 ## Datasets
@@ -50,4 +50,4 @@ Please change the database password and the openvas password if running in produ
 - [![LinkedIn](https://i.sstatic.net/gVE0j.png) Patrick Kuin](https://www.linkedin.com/in/patrick-kuin-8a08a81b7)
 
 ### License
-To be added
+This project is licensed under [GNU GPLv3](LICENSE)
