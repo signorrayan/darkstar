@@ -13,7 +13,7 @@ HIBP_KEY=
 
 #? OpenVAS
 OPENVAS_USER=
-OPENVAS_PASSWORD=' > .env1
+OPENVAS_PASSWORD=' > ./darkstar/.env
 
 
 #? Setup the docker 
