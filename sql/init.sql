@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS test;
 
 USE test;
 
-CREATE TABLE IF NOT EXISTS Vulnerability (
+CREATE TABLE IF NOT EXISTS vulnerability (
     id INT(11) NOT NULL AUTO_INCREMENT,
     cve VARCHAR(255), -- CVE identifier (unique vulnerability ID)
     title TEXT, -- Title or short description of the vulnerability

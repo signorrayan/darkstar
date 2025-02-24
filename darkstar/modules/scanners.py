@@ -232,6 +232,11 @@ class nuclei_wordpress():
         self.domains = domains
         self.org_name = org_name
 
+    def remove_ansi_codes(self, s):
+        # This regex matches ANSI escape sequences
+        ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+        return ansi_escape.sub('', s)
+
     def scan_nuclei(self) -> None:
         keywords = ["unknown", "low", "medium", "high", "critical"]
         #nuclei_command = f"nuclei -l domains.txt -s low,medium,high,critical,unknown -et github -bs 400 -rl 4000"
@@ -270,79 +275,38 @@ class nuclei_wordpress():
 
                     epss_percentile = None  
 
-
                     # if has / in it, stop at /
                     if "/" in domain:
                         domain = domain.split("/")[0]
-
-                    # extract cve with regex
-                    cve = re.search(r"(?P<cve>CVE-[^\s]+)", output_line)
-                    #print(cve)
 
                     # get first element of output line
                     vuln = output_line.split(" ")[0]
                     print(f"Raw vuln: {vuln}")
 
-                    pattern = re.compile(r'\[(?P<title>.*?)(?=-[0-9a-fA-F]+:version)\-[0-9a-fA-F]+:version\]')
-                    vuln = pattern.findall(vuln)
-                    
-                    if cve:
-                        cve = vuln
-                    
-                    vuln2 = vuln
-                    before = "Vulnerability found"
-                    # if the output line ends with a something inbetween []
-                    # get last part of output line
-                    last = output_line.split(" ")[-1]
-                    # remove enters or spaces at the end
-                    last = last.strip()
-                    # if last part of output line starts with [
-                    if last.endswith("]"):
-                        before = vuln 
-                        # strip last from color
-                        last = re.sub(r'\x1b[^m]*m', '', last)
-                        # strip last from ]
-                        last = last.split("]")[0]
-                        # replace vuln with last
-                        vuln2 = vuln
-                        vuln = last
-
-                    exploit = False
-                    epss = 0.0
-
-                    if cve:
-                        before = "CVE match found"
-                        # cut off at first :
-                        cve = cve.split(":")[0]
-                        # cut off at first ]
-                        cve = cve.split("]")[0]
-                        # remove colors from cve
-                        cve = re.sub(r'\x1b[^m]*m', '', cve)
-                        cve_number = cve
-                    else:
-                        cve_number = None
-                    # if unknown
+                    template_hash_value = vuln.rstrip(']').lstrip('[').split('-')[-1].split(':')[0]
+                    formatted_vuln = vuln.replace(f"-{template_hash_value}", '').strip('[').strip(']')
+                    formatted_vuln = self.remove_ansi_codes(formatted_vuln).split(':')[0]
+                    print(f"Formatted vuln: {formatted_vuln}")
+                   
                     category = ""
-                    category2 = ""
-                    
                     if "unknown" in output_line:
                         category = "low"
-                        category2 = "unknown"
                     elif "low" in output_line:
                         category = "low"
-                        category2 = "low"
                     elif "medium" in output_line:
                         category = "medium"
-                        category2 = "medium"
                     elif "high" in output_line:
                         category = "high"
-                        category2 = "high"
                     elif "critical" in output_line:
                         category = "critical"
-                        category2 = "critical"
 
-                    print(f"Vuln: {vuln}, Vuln2: {vuln2}")
-                    finding_object = Vulnerability(vuln2, url, "nuclei_wordpress", 97, category, host=domain, cve_number=cve_number, epss=epss_percentile)
+                    if 'CVE' in formatted_vuln or 'cve' in formatted_vuln:
+                        cve_number = formatted_vuln
+                    else:
+                        cve_number = None
+
+                    print(f"Vuln: {formatted_vuln}")
+                    finding_object = Vulnerability(formatted_vuln, url, "nuclei_wordpress", 97, category, host=domain, cve_number=cve_number, epss=epss_percentile)
 
                     #? add to database
                     print(f"[+] Adding to database:\n{finding_object}")
