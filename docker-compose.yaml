@@ -5,10 +5,10 @@ services:
     image: mariadb:10.5
     container_name: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: database_is_fun01
-      MYSQL_DATABASE: test
-      MYSQL_USER: data_guru
-      MYSQL_PASSWORD: kjafskljfs836487348akskdhkasdhk
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
@@ -21,6 +21,8 @@ services:
       context: ./darkstar
       dockerfile: Dockerfile
     container_name: darkstar
+    env_file:
+      - ./.env
     depends_on:
       - mariadb
     networks:

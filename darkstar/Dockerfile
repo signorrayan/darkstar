@@ -36,7 +36,6 @@ COPY setup/requirements.txt /app
 COPY modules /app/modules
 COPY datasets /app/datasets
 COPY c_scripts /app/c_scripts
-COPY .env /app
 RUN gcc -o c_scripts/search_epss c_scripts/search_epss.c
 RUN mkdir /app/bbot_output
 
