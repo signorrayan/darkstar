@@ -3,8 +3,36 @@ import requests
 import pandas as pd
 import datetime
 
+"""
+Vulnerability data models for the Darkstar framework.
 
-class CVE:  
+This module provides classes to represent vulnerabilities and CVEs,
+with functionality to enrich vulnerability data from external sources.
+"""
+
+class CVE:
+    """
+    Representation of a Common Vulnerabilities and Exposures (CVE) entry.
+    
+    Stores comprehensive information about a CVE, including scores,
+    descriptions, related weaknesses, and exploitation data.
+    
+    Attributes:
+        cve (str): CVE identifier (e.g., CVE-2021-12345)
+        cvss (float): Common Vulnerability Scoring System score
+        epss (float): Exploit Prediction Scoring System score
+        summary (str): Description of the vulnerability
+        cwe (str): Common Weakness Enumeration identifier
+        references (list): References to documentation and advisories
+        capec (str): Common Attack Pattern Enumeration and Classification
+        solution (str): Remediation guidance
+        impact (dict): Impact information
+        access (dict): Access vector information
+        age (int): Age of the CVE in days
+        pocs (list): Proof of Concept references
+        kev (bool): Known Exploited Vulnerability status
+    """
+    
     def __init__(self, cve, cvss=None, summary=None, cwe=None, references=None, epss=None, capec=None, solution=None, impact=None, access=None, age=None, pocs=None, kev=None):  
         self.cve = cve  
         self.cvss = cvss  
@@ -20,8 +48,17 @@ class CVE:
         self.pocs = pocs
         self.kev = kev
 
+    @staticmethod
     def search_epss_by_cve(cve: str) -> float:
-        #? https://www.first.org/epss/data_stats
+        """
+        Search for the EPSS score of a CVE.
+        
+        Args:
+            cve (str): CVE identifier to search for
+            
+        Returns:
+            float: EPSS score or 'Unknown' if not found
+        """
         command = ["c_scripts/search_epss", 'datasets/epss_scores-current.csv', cve]
         result = subprocess.run(command, capture_output=True, text=True)
         try:
@@ -30,10 +67,40 @@ class CVE:
             return 'Unknown'
 
     def __str__(self):
+        """
+        String representation of the CVE.
+        
+        Returns:
+            str: Formatted string with CVE information
+        """
         return f"{self.cve} | {self.cvss} | {self.epss} | {self.summary} | {self.cwe} | {self.references} | {self.capec} | {self.solution} | {self.impact} | {self.access} | {self.age} | {self.pocs} | {self.kev}"
 
-
 class Vulnerability():
+    """
+    Representation of a security vulnerability.
+    
+    Can represent both CVE-based and non-CVE vulnerabilities with
+    comprehensive information about the finding.
+    
+    Attributes:
+        title (str): Vulnerability title
+        affected_item (str): Affected URL, file, or component
+        tool (str): Scanner or tool that found the vulnerability
+        confidence (int): Confidence score (0-100)
+        severity (str): Severity rating (e.g., critical, high, medium)
+        host (str): Hostname or IP where the vulnerability was found
+        cve (CVE): Associated CVE object if applicable
+        summary (str): Description of the vulnerability
+        impact (str): Potential impact of exploitation
+        solution (str): Remediation guidance
+        poc (str): Proof of concept or demonstration
+        references (list): References to documentation and advisories
+        epss (float): Exploit Prediction Scoring System score
+        cvss (float): Common Vulnerability Scoring System score
+        cwe (str): Common Weakness Enumeration identifier
+        capec (str): Common Attack Pattern Enumeration and Classification
+    """
+    
     def __init__(self, title, affected_item, tool, confidence, severity, host,
                  cve_number="", summary="", impact="", solution="", poc="",
                  references="", epss=None, cvss=None, cwe="", capec=""):
@@ -72,7 +139,19 @@ class Vulnerability():
             self.cwe = cwe
             self.capec = capec
 
-    def cve_enricher(self, cve_number: str) -> CVE:            
+    def cve_enricher(self, cve_number: str) -> CVE:
+        """
+        Enrich a vulnerability with CVE data from external sources.
+        
+        Fetches detailed information about a CVE from multiple sources
+        and creates a comprehensive CVE object.
+        
+        Args:
+            cve_number (str): CVE identifier to enrich
+            
+        Returns:
+            CVE: Enriched CVE object or None if not found
+        """
         #? Get the epss score for the cve
         epss_percentile = CVE.search_epss_by_cve(cve_number)
 

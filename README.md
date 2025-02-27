@@ -34,7 +34,7 @@ Before installing, ensure you have the following tools:
 - The database name must be `test`. If you need a custom name, update the database in [`init.sql`](sql/init.sql).
 - To run a scan, use the following command:
 ```bash
-python3 main.py -t testphp.vulnweb.com -m 2 -d test -env .env
+python3 main.py -t testphp.vulnweb.com,44.228.249.3 -m 2 -d test -env .env
 ```
 
 ## Datasets

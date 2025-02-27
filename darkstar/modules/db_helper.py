@@ -5,15 +5,61 @@ from modules.config import db_config
 from modules.vulns import Vulnerability
 import re
 import json
+from colorama import Fore, Back, Style, init
+
+# Initialize colorama
+init(autoreset=True)
+
+def debug_success(message):
+    """Print a success message in green."""
+    print(f"{Fore.GREEN}[+] {message}{Style.RESET_ALL}")
+
+def debug_error(message):
+    """Print an error message in red."""
+    print(f"{Fore.RED}[-] {message}{Style.RESET_ALL}")
+
+def debug_warning(message):
+    """Print a warning message in yellow."""
+    print(f"{Fore.YELLOW}[!] {message}{Style.RESET_ALL}")
+
+def debug_info(message):
+    """Print an info message in blue."""
+    print(f"{Fore.BLUE}[*] {message}{Style.RESET_ALL}")
+
+"""
+Database helper functions for the Darkstar framework.
+
+This module provides functions to interact with the MySQL database,
+including inserting scan results, vulnerability findings, and breach data.
+"""
 
 def insert_bbot_to_db(dataframe: pd.DataFrame, org_name: str):
+    """
+    Insert bbot scan results into the database.
+    
+    Processes each row in the DataFrame and inserts it into the
+    asmevents table in the organization-specific database.
+    
+    Args:
+        dataframe (DataFrame): DataFrame containing bbot scan results
+        org_name (str): Organization name/database name
+    """
     try:
+        debug_info(f"Connecting to database for organization: {org_name}")
         connection = mysql.connector.connect(**db_config)
         if connection.is_connected():
+            debug_success("Database connection established")
             cursor = connection.cursor()
             cursor.execute(f"USE {org_name}") #? Select the database for the organisation
+            
+            total_rows = len(dataframe)
+            debug_info(f"Processing {total_rows} records for insertion")
+            
             #? Iterate over DataFrame rows and insert into MySQL table
             for index, row in dataframe.iterrows():
+                if index % 50 == 0:
+                    debug_info(f"Progress: {index}/{total_rows} records processed")
+                
                 try:
                     event_type = json.dumps(json.loads(row["Event type"].replace("'", '"')))
                 except (json.JSONDecodeError, AttributeError):
@@ -58,25 +104,41 @@ def insert_bbot_to_db(dataframe: pd.DataFrame, org_name: str):
 
             #? Commit the transaction
             connection.commit()
-            print("[+] Data inserted successfully into database.")
+            debug_success(f"Successfully inserted {total_rows} records")
     except mysql.connector.Error as e:
-        print(f"[-] Error: {e}")
+        debug_error(f"Database Error: {e}")
 
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
-            print("[+] Closed the MySQL connection.")
+            debug_success("Database connection closed")
 
 def sanitize_string(value):
-    """Remove ANSI escape codes and trim strings."""
+    """
+    Remove ANSI escape codes and trim strings.
+    
+    Args:
+        value: Value to sanitize, expected to be a string
+        
+    Returns:
+        Sanitized string or original value if not a string
+    """
     
     if isinstance(value, str):
         return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', value).strip()
     return value
 
 def flatten_list(value):
-    """Convert a list to a comma-separated string."""
+    """
+    Convert a list to a comma-separated string.
+    
+    Args:
+        value: Value to flatten, expected to be a list
+        
+    Returns:
+        str: Comma-separated string or original value if not a list
+    """
     print(f"Value: {value}")
     if isinstance(value, list):
         new = ', '.join(map(str, value))
@@ -85,13 +147,29 @@ def flatten_list(value):
     return value
 
 def convert_to_json(value):
-    """Convert a dictionary to a JSON string."""
+    """
+    Convert a dictionary to a JSON string.
+    
+    Args:
+        value: Value to convert, expected to be a dictionary
+        
+    Returns:
+        str: JSON string or original value if not a dictionary
+    """
     if isinstance(value, dict):
         return json.dumps(value)
     return value
 
 def prepare_cve_data(vuln):
-    """Clean and prepare CVE data for database insertion."""
+    """
+    Clean and prepare CVE data for database insertion.
+    
+    Args:
+        vuln (Vulnerability): Vulnerability object with CVE information
+        
+    Returns:
+        tuple: Tuple of values ready for database insertion
+    """
     title = sanitize_string(vuln.title).strip("[]")  # Sanitize title
     references = flatten_list(vuln.cve.references)  # Flatten references list
     pocs = flatten_list(vuln.cve.pocs)  # Flatten PoCs list
@@ -129,7 +207,15 @@ def prepare_cve_data(vuln):
     return cve_data
 
 def prepare_non_cve_data(vuln):
-    """Clean and prepare non-CVE data for database insertion."""
+    """
+    Clean and prepare non-CVE vulnerability data for database insertion.
+    
+    Args:
+        vuln (Vulnerability): Vulnerability object without CVE information
+        
+    Returns:
+        tuple: Tuple of values ready for database insertion
+    """
     references = flatten_list(vuln.references)
     poc = flatten_list(vuln.poc)
 
@@ -163,6 +249,15 @@ def prepare_non_cve_data(vuln):
     return non_cve_data
 
 def insert_vulnerability_to_database(vuln: Vulnerability, org_name: str):
+    """
+    Insert a vulnerability object into the database.
+    
+    Handles both CVE and non-CVE vulnerabilities appropriately.
+    
+    Args:
+        vuln (Vulnerability): Vulnerability object to insert
+        org_name (str): Organization name/database name
+    """
     try:
         # Establish the database connection
         connection = mysql.connector.connect(**db_config)
@@ -204,22 +299,45 @@ def insert_vulnerability_to_database(vuln: Vulnerability, org_name: str):
             print("[+] Closed the MySQL connection.")
 
 
-# Insert an email into the SQL output database
 def insert_email_data(emails, org_name):
-    connection = mysql.connector.connect(**db_config)
-    if connection.is_connected():
-        cursor = connection.cursor()
-        cursor.execute(f"USE {org_name}")
-        for email in emails:
-            email = email.strip()
-            sql_query = "INSERT INTO email_input (email) VALUES (%s)"
-            val = (email,)
-            cursor.execute(sql_query, val)
+    """
+    Insert discovered email addresses into the database.
+    
+    Args:
+        emails (list): List of email addresses to insert
+        org_name (str): Organization name/database name
+    """
+    try:
+        debug_info(f"Inserting {len(emails)} email addresses for {org_name}")
+        connection = mysql.connector.connect(**db_config)
+        if connection.is_connected():
+            cursor = connection.cursor()
+            cursor.execute(f"USE {org_name}")
+            
+            for i, email in enumerate(emails, 1):
+                if i % 10 == 0:
+                    debug_info(f"Progress: {i}/{len(emails)} emails processed")
+                email = email.strip()
+                sql_query = "INSERT INTO email_input (email) VALUES (%s)"
+                cursor.execute(sql_query, (email,))
+                
             connection.commit()
-        connection.close()
+            debug_success(f"Successfully inserted {len(emails)} email addresses")
+    except mysql.connector.Error as e:
+        debug_error(f"Database Error: {e}")
+    finally:
+        if connection.is_connected():
+            connection.close()
+            debug_success("Database connection closed")
 
-# Insert a breaches email into the SQL output database
 def insert_breached_email_data(email_breaches, org_name):
+    """
+    Insert breached email information into the database.
+    
+    Args:
+        email_breaches (list): List of breach data for emails
+        org_name (str): Organization name/database name
+    """
     connection = mysql.connector.connect(**db_config)
     if connection.is_connected():
         cursor = connection.cursor()
@@ -231,8 +349,14 @@ def insert_breached_email_data(email_breaches, org_name):
             connection.commit()
         connection.close()
 
-# Insert a leaked password into the SQL output database
 def insert_password_data(passwords, org_name):
+    """
+    Insert leaked password information into the database.
+    
+    Args:
+        passwords (list): List of password data for emails
+        org_name (str): Organization name/database name
+    """
     connection = mysql.connector.connect(**db_config)
     if connection.is_connected():
         cursor = connection.cursor()
