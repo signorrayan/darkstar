@@ -5,10 +5,10 @@ services:
     image: mariadb:10.5
     container_name: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: database_is_fun01
-      MYSQL_DATABASE: test
-      MYSQL_USER: data_guru
-      MYSQL_PASSWORD: GuR1_F4n_DB_01
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
@@ -16,15 +16,23 @@ services:
     networks:
       - vuln_net
 
-  pwnpatrol:
+  darkstar:
     build:
-      context: ./pwnpatrol
+      context: ./darkstar
       dockerfile: Dockerfile
-    container_name: pwnpatrol
+    container_name: darkstar
+    env_file:
+      - ./.env
     depends_on:
       - mariadb
     networks:
       - vuln_net
+    volumes:
+      - ./darkstar/modules:/app/modules
+      - ./darkstar/datasets:/app/datasets
+      - ./darkstar/main.py:/app/main.py
+      - ./darkstar/c_scripts:/app/c_scripts
+      - ./darkstar/tests:/app/tests
 
 volumes:
   mariadb_data:
