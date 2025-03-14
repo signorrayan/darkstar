@@ -2,7 +2,7 @@ import pandas as pd
 import mysql.connector
 from datetime import datetime
 from modules.config import db_config
-from modules.vulns import Vulnerability
+from core.vulns import Vulnerability
 import re
 import json
 from colorama import Fore, Back, Style, init

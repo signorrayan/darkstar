@@ -13,6 +13,13 @@ Configuration includes:
 from dotenv import load_dotenv
 import os
 from colorama import Fore, Style, init
+from core.custom_logger.logger import setup_logger
+import logging
+
+
+setup_logger()
+logger = logging.getLogger(__name__)
+
 
 # Initialize colorama
 init(autoreset=True)
@@ -22,7 +29,7 @@ def debug_config(key, masked=False):
     value = os.getenv(key)
     status = f"{Fore.GREEN}OK{Style.RESET_ALL}" if value else f"{Fore.RED}MISSING{Style.RESET_ALL}"
     display_value = "********" if masked and value else value
-    print(f"[CONFIG] {key}: {status} ({display_value})")
+    logger.info(f"[CONFIG] {key}: {status} ({display_value})")
 
 load_dotenv()
 

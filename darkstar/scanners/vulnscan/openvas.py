@@ -7,7 +7,7 @@ import json
 import time
 import netaddr
 import logging  # Add missing logging import
-from modules.vulns import Vulnerability
+from core.vulns import Vulnerability
 from modules.db_helper import insert_vulnerability_to_database
 from modules.config import OPENVAS_USER, OPENVAS_PASSWORD
 import pandas as pd
